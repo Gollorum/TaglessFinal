@@ -4,37 +4,7 @@ import scala.Tuple._
 import scala.reflect.ClassTag
 
 trait Exp[A[_]] {
-//  def apply[B](implicit inst: A[B]): B
-  protected def apply[B, T <: Tuple](inst: A[B], allInterpreters: T): B
-
-  private type InterpreterAndSomething[B] = [X <: Tuple] =>> A[B] *: X
-
-//  type ResultWith[B, T <: Tuple] = T match {
-//    case EmptyTuple => Nothing
-//    case InterpreterAndSomething[B][_] => B
-//    case _ *: t => ResultWith[B, t]
-//  }
-
-  private def applySearch[B, T <: Tuple, AT <: Tuple](interpreters: T, allInterpreters: AT)(implicit classTag: ClassTag[A[B]]): B = interpreters match {
-    case _: EmptyTuple => throw new IllegalArgumentException(s"Interpreter of type ${classTag} was not provided.")
-    case b *: _: InterpreterAndSomething[B][_] => {
-      //val inst: A[B] = b.asInstanceOf[A[B]]
-      apply[B, AT](b.asInstanceOf, allInterpreters).asInstanceOf
-    }
-    case _ *: t => applySearch(t.asInstanceOf, allInterpreters.asInstanceOf).asInstanceOf
-  }
-
-  def apply[B, T <: Tuple](interpreters: T)(implicit classTag: ClassTag[A[B]]): B = applySearch[B, T, T](interpreters, interpreters)
-
-
-  //  inline def apply[B](interpreters: Interpreter[B]*): B = ${ '{apply[B](inst = ${resolveInterpreters('interpreters)})} }
-
-//  private def resolveInterpreters[B](expr: Expr[Seq[Interpreter[B]]])(using target: Type[A[B]], q: Quotes): Expr[A[B]] =
-//    expr match {
-//      case Varargs(interpreterExprs) => Exp.constructInterpreterTree[A, B](interpreterExprs)
-//      case _ => scala.sys.error(s"Explicit arguments exprected. Got: $expr")
-//    }
-
+  def apply[R](implicit inst: A[R]): R
 }
 
 trait Interpreter[A]

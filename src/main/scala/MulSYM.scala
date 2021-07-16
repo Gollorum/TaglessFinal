@@ -4,12 +4,8 @@ trait MulSYM[repr] extends Interpreter[repr] {
 
 object MulSYM {
 
-  case class mul[E1 <: Exp[_], E2 <: Exp[_]](e1: E1, e2: E2) extends Exp[MulSYM] {
-    override protected def apply[B, T <: Tuple](inst: MulSYM[B], allInterpreters: T): B = {
-      val left = e1.apply(allInterpreters)
-      val right = e2.apply(allInterpreters)
-      inst.mul(left, right)
-    }
+  case class mul[I1[_], I2[_]](e1: Exp[I1], e2: Exp[I2]) extends Exp[[R] =>> InterpreterTriple[MulSYM, I1, I2, R]] {
+    override def apply[R](implicit inst: InterpreterTriple[MulSYM, I1, I2, R]): R = inst.a.mul(e1(inst.b), e2(inst.c))
   }
 //
 //  def mul[I1[_], I2[_]](e1: Exp[I1], e2: Exp[I2]): Exp[[R] =>> InterpreterTriple[I1, I2, MulSYM, R]] = new Exp {

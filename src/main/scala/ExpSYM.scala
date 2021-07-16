@@ -8,14 +8,14 @@ trait ExpSYM[repr] extends Interpreter[repr] {
 
 object ExpSYM {
 
-  case class lit(a: Int) extends Exp[ExpSYM] {
-    override protected def apply[B, T <: Tuple](inst: ExpSYM[B], allInterpreters: T): B = inst.lit(a)
+  case class lit(n: Int) extends Exp[ExpSYM] {
+    override def apply[R](implicit inst: ExpSYM[R]): R = inst.lit(n)
   }
-  case class neg[E <: Exp[_]](e: E) extends Exp[ExpSYM] {
-    override protected def apply[B, T <: Tuple](inst: ExpSYM[B], allInterpreters: T): B = inst.neg(e.apply(allInterpreters))
+  case class neg[I[_]](e: Exp[I]) extends Exp[[R] =>> InterpreterPair[ExpSYM, I, R]] {
+    override def apply[R](implicit inst: InterpreterPair[ExpSYM, I, R]): R = inst.a.neg(e(inst.b))
   }
-  case class add[E1 <: Exp[_], E2 <: Exp[_]](e1: E1, e2: E2) extends Exp[ExpSYM] {
-    override protected def apply[B, T <: Tuple](inst: ExpSYM[B], allInterpreters: T): B = inst.add(e1.apply(allInterpreters), e2.apply(allInterpreters))
+  case class add[I1[_], I2[_]](e1: Exp[I1], e2: Exp[I2]) extends Exp[[R] =>> InterpreterTriple[ExpSYM, I1, I2, R]] {
+    override def apply[R](implicit inst: InterpreterTriple[ExpSYM, I1, I2, R]): R = inst.a.add(e1(inst.b), e2(inst.c))
   }
 //
 //  case class lit(a: Int) extends Exp[ExpSYM] {
