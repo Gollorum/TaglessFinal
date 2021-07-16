@@ -1,58 +1,81 @@
 import Exp._
 
-trait ExpSYM[repr] extends Interpreter[repr] {
-  def lit(n: Int): repr
-  def neg(e: repr): repr
-  def add(e1: repr, e2: repr): repr
+trait LitI[R] {
+  def lit(n: Int): R
+}
+
+trait NegI[R] {
+  def neg(e: R): R
+}
+
+trait AddI[R] {
+  def add(e1: R, e2: R): R
 }
 
 object ExpSYM {
 
-  case class lit(n: Int) extends Exp[ExpSYM] {
-    override def apply[R](implicit inst: ExpSYM[R]): R = inst.lit(n)
+  case class lit(a: Int) extends Exp[LitI] {
+    override def apply[R](implicit inst: LitI[R]): R = inst.lit(a)
   }
-  case class neg[I[_]](e: Exp[I]) extends Exp[[R] =>> InterpreterPair[ExpSYM, I, R]] {
-    override def apply[R](implicit inst: InterpreterPair[ExpSYM, I, R]): R = inst.a.neg(e(inst.b))
+  case class neg[I[_]](e: Exp[I]) extends Exp[IP[NegI, I]] {
+    override def apply[R](implicit inst: IP[NegI, I][R]): R = inst.a.neg(e[R](inst.b))
   }
-  case class add[I1[_], I2[_]](e1: Exp[I1], e2: Exp[I2]) extends Exp[[R] =>> InterpreterTriple[ExpSYM, I1, I2, R]] {
-    override def apply[R](implicit inst: InterpreterTriple[ExpSYM, I1, I2, R]): R = inst.a.add(e1(inst.b), e2(inst.c))
-  }
-//
-//  case class lit(a: Int) extends Exp[ExpSYM] {
-//    override def apply[R](implicit inst: ExpSYM[R]): R = inst.lit(a)
-//  }
-//  case class neg[I[_]](e: Exp[I]) extends Exp[IP[ExpSYM, I]] {
-//    override def apply[R](implicit inst: IP[ExpSYM, I][R]): R = inst.a.neg(e[R](inst.b))
-//  }
-//  case class add[I1[_], I2[_]](e1: Exp[I1], e2: Exp[I2]) extends Exp[IT[ExpSYM, I1, I2]] {
-//    override def apply[R](implicit inst: IT[ExpSYM, I1, I2][R]): R = inst.a.add(e1(inst.b), e2(inst.c))
-//  }
-
-  def push_neg[A[_]](exp: Exp[A]): Exp[_] = exp match {
-    case lit(n) => exp
-    case neg(lit(n)) => exp
-    case neg(neg(e)) => push_neg(e)
-    case neg(add(e1, e2)) => add(push_neg(neg(e1)), push_neg(neg(e2)))
-    case add(e1, e2) => add(push_neg(e1), push_neg(e2))
+  case class add[I1[_], I2[_]](e1: Exp[I1], e2: Exp[I2]) extends Exp[IT[AddI, I1, I2]] {
+    override def apply[R](implicit inst: IT[AddI, I1, I2][R]): R = inst.a.add(e1(inst.b), e2(inst.c))
   }
 
-  implicit object Eval extends ExpSYM[Int] {
+  implicit object EvalLit extends LitI[Int] {
     override def lit(n: Int): Int = n
+  }
+
+  implicit object EvalNeg extends NegI[Int] {
     override def neg(e: Int): Int = -e
+  }
+
+  implicit object EvalAdd extends AddI[Int] {
     override def add(e1: Int, e2: Int): Int = e1 + e2
   }
 
-  implicit object View extends ExpSYM[String] {
+  implicit object ViewLit extends LitI[String] {
     override def lit(n: Int): String = n.toString
-    override def neg(e: String): String = "-" + e
-    override def add(e1: String, e2: String): String = "(" + e1 + " + " + e2 + ")"
   }
 
-//  sealed trait Sign
-//  object Pos extends Sign
-//  object Neg extends Sign
+  implicit object ViewNeg extends NegI[String] {
+    override def neg(e: String): String = s"-$e"
+  }
+
+  implicit object ViewAdd extends AddI[String] {
+    override def add(e1: String, e2: String): String = s"($e1 + $e2)"
+  }
+
+  sealed trait Sign
+  object Sign {
+    object Pos extends Sign
+    object Neg extends Sign
+  }
+
+  type Opposite[S <: Sign] = S match {
+    case Sign.Pos.type => Sign.Neg.type
+    case Sign.Neg.type => Sign.Pos.type
+  }
+
+//  type PushNeg[S <: Sign, E <: ExpRaw] = E match {
+//    case lit => S match {
+//      case Sign.Pos.type => lit
+//      case Sign.Neg.type => neg[ExpSYM]
+//    }
+//    case neg[] =>
+//  }
 //
-//  class push_neg extends ExpSYM[Sign => ExpRaw] {
+//  class push_neg[I[_]](e: Exp[I]) extends ExpSYM[Sign => ExpRaw] {
+//
+//  }
+
+
+
+
+
+
 //
 //    override def lit(n: Int): Sign => ExpRaw = _ match {
 //      case _: Pos.type => ExpSYM.lit(n)

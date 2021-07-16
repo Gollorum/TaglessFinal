@@ -3,7 +3,9 @@ import scala.reflect
 import scala.Tuple._
 import scala.reflect.ClassTag
 
-trait Exp[A[_]] {
+sealed trait ExpRaw
+
+trait Exp[A[_]] extends ExpRaw {
   def apply[R](implicit inst: A[R]): R
 }
 
