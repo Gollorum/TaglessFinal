@@ -2,7 +2,6 @@ import ExpSYM._
 import MulSYM._
 import Exp._
 
-import scala.language.experimental.macros
 import scala.language.implicitConversions
 
 object Main {
@@ -13,8 +12,8 @@ object Main {
 //    val foo: List[String] = MyObj.foobar("Foo")
 //    println(foo.mkString(", "))
 //    AppleTree.apple[String]
-    println(tf1[String] /*+ " = " + push_neg(tf1)[String] */+ " = " + tf1[Int].toString)
-    println(tfm1[String] /*+ " = " + push_neg(tfm1)[String]*/ + " = " + tfm1[Int].toString)
+    println(tf1(Seq[Interpreter[_]](ViewLit, ViewNeg, ViewAdd)) /*+ " = " + push_neg(tf1)[String] */+ " = " + tf1(Seq(EvalLit, EvalNeg, EvalAdd)).toString)
+    println(tfm1(Seq(ViewLit, ViewNeg, ViewAdd, MulSYM.View)) /*+ " = " + push_neg(tfm1)[String]*/ + " = " + tfm1(Seq(EvalLit, EvalNeg, EvalAdd, MulSYM.Eval)).toString)
 //    println(tf1[String])
   }
 
