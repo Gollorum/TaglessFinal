@@ -1,29 +1,27 @@
-import Interpreter.List.With
+import Exp._
 
-trait LitI[R] extends Interpreter[R] {
+trait LitI[R] {
   def lit(n: Int): R
 }
 
-trait NegI[R] extends Interpreter[R] {
+trait NegI[R] {
   def neg(e: R): R
 }
 
-trait AddI[R] extends Interpreter[R] {
+trait AddI[R] {
   def add(e1: R, e2: R): R
 }
 
 object ExpSYM {
 
-  case class lit(n: Int) extends Exp.Leaf[LitI] {
-    override def apply[Repr](i: LitI[Repr]): Repr = i.lit(n)
+  case class lit(a: Int) extends Exp[LitI] {
+    override def apply[R](implicit inst: LitI[R]): R = inst.lit(a)
   }
-  case class neg[T[_] <: Interpreter.List[_]](e: Exp[T]) extends Exp.Node[NegI, T] {
-    override def apply[Repr](interpreters: Interpreter.List.With[Repr, NegI[Repr], T[Repr]]): Repr =
-      Interpreter.List.extra[Repr, NegI[Repr], T[Repr]](interpreters).neg(e( interpreters))
+  case class neg[I[_]](e: Exp[I]) extends Exp[IP[NegI, I]] {
+    override def apply[R](implicit inst: IP[NegI, I][R]): R = inst.a.neg(e[R](inst.b))
   }
-  case class add[T1[_] <: Interpreter.List[_], T2[_] <: Interpreter.List[_]](e1: Exp[T1], e2: Exp[T2]) extends Exp.Node[AddI, [R] =>> Interpreter.List.Concat[R, T1, T2]] {
-    override def apply[Repr](interpreters: Interpreter.List.With[Repr, NegI[Repr], Interpreter.List.Concat[Repr, T1[Repr], T2[Repr]]]): Repr =
-      Interpreter.List.extra[Repr, NegI[Repr], Interpreter.List.Concat[Repr, T1[Repr], T2[Repr]]](interpreters).add(e1(interpreters), e2(interpreters))
+  case class add[I1[_], I2[_]](e1: Exp[I1], e2: Exp[I2]) extends Exp[IT[AddI, I1, I2]] {
+    override def apply[R](implicit inst: IT[AddI, I1, I2][R]): R = inst.a.add(e1(inst.b), e2(inst.c))
   }
 
   implicit object EvalLit extends LitI[Int] {
@@ -50,28 +48,33 @@ object ExpSYM {
     override def add(e1: String, e2: String): String = s"($e1 + $e2)"
   }
 
-//  sealed trait Sign
-//  object Pos extends Sign
-//  object Neg extends Sign
-//
-//  implicit object PushNegLit extends LitI[Sign => ExpUntyped] {
-//    override def lit(n: Int): Sign => ExpUntyped = {
-//      case Pos => ExpSYM.lit(n)
-//      case Neg => ExpSYM.neg(ExpSYM.lit(n))
+  sealed trait Sign
+  object Sign {
+    object Pos extends Sign
+    object Neg extends Sign
+  }
+
+  type Opposite[S <: Sign] = S match {
+    case Sign.Pos.type => Sign.Neg.type
+    case Sign.Neg.type => Sign.Pos.type
+  }
+
+//  type PushNeg[S <: Sign, E <: ExpRaw] = E match {
+//    case lit => S match {
+//      case Sign.Pos.type => lit
+//      case Sign.Neg.type => neg[ExpSYM]
 //    }
+//    case neg[] =>
 //  }
 //
-//  implicit object PushNegNeg extends NegI[Sign => ExpUntyped] {
-//    override def neg(e: Sign => ExpUntyped): Sign => ExpUntyped = {
-//      case Pos => e(Neg)
-//      case Neg => e(Pos)
-//    }
-//  }
+//  class push_neg[I[_]](e: Exp[I]) extends ExpSYM[Sign => ExpRaw] {
 //
-//  implicit object PushNegAdd extends AddI[Sign => ExpUntyped] {
-//    override def add(e1: Sign => ExpUntyped, e2: Sign => ExpUntyped): Sign => ExpUntyped = s =>
-//      ExpSYM.add(e1(s), e2(s))
 //  }
+
+
+
+
+
 
 //
 //    override def lit(n: Int): Sign => ExpRaw = _ match {
