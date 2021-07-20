@@ -15,16 +15,16 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val macros = project
-  .in(file("modules/marcos"))
-  .settings(
-    name := "macros",
-    commonSettings
-  )
+//lazy val macros = project
+//  .in(file("modules/marcos"))
+//  .settings(
+//    name := "macros",
+//    commonSettings
+//  )
 
 lazy val root = project
   .in(file("."))
-  .dependsOn(macros)
+//  .dependsOn(macros)
   .settings(
     name := "Seminar Funtional Programming",
     commonSettings
