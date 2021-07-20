@@ -1,38 +1,34 @@
-import ftt.ExpSYM._
-import ftt.MulSYM._
-import ftt.Exp._
-import ftt.{Interpreter1, LitI, NegI, PushNeg}
-import ftt.PushNeg._
-import ftt._
-
-import scala.collection.immutable.LinearSeq
+import ExpSYM._
+import MulSYM._
+import Serialization._
+import Duplicate._
 
 object Main:
 
-  trait Foo:
-    type Baar
-    def value: Baar
-
-  object Foo1 extends Foo:
-    override type Baar = String
-    override def value: String = "???"
-
-  object Foo2 extends Foo:
-    override type Baar = Int
-    override def value: Int = 0
-
-  def get(x: Foo): List[Any => x.Baar] = (_ => x.value) :: Nil
-  def getget(x: Foo): LinearSeq[Any => x.Baar] = get(x)
+  val eval: Int => Int = identity
+  val view: String => String = identity
+  val toTree: Tree => Tree = identity
 
   def main(args: Array[String]): Unit = {
-//      val tf1 = add(lit(8), neg(add(lit(1), lit(2))))
-//      val tfm1 = add(lit(7), neg(mul(lit(1), lit(2))))
-//    val foo: ftt.NegI[ftt.ExpSYM.Sign.Neg.type => ftt.ExpSYM.neg[LitI]] = bar2[[R] =>> Interpreter1[NegI[R], LitI]](Neg[LitI](Lit))
-//    val foo = implicitly[ftt.NegI[ftt.ExpSYM.Sign.Neg.type => pushNeg.PosResult]](bar2(pushNeg))
-    val pn: Neg[LitI] = Neg
-    val tf1Pushed: pn.NegResult = explPN(neg(neg(lit(8))))(pn, implicitly)
-//    val tf1Pushed = explPN(neg(lit(8)))
-    println(tf1Pushed[String](ViewLit))
-//      println(tf1[String] /*+ " = " + push_neg(tf1)[String] */ + " = " + tf1[Int].toString)
-//      println(tfm1[String] /*+ " = " + push_neg(tfm1)[String]*/ + " = " + tfm1[Int].toString)
+
+//    val tf1View = view(add(lit(8), neg(add(lit(1), lit(2)))))
+//    val tf1Eval = eval(add(lit(8), neg(add(lit(1), lit(2)))))
+//
+//    val tfm1View: String = add(lit(7), neg(mul(lit(1), lit(2))))
+//    val tfm1Eval: Int = add(lit(7), neg(mul(lit(1), lit(2))))
+//
+//    val tfm2View = view(mul(lit(7), tfm1View))
+//    val tfm2Eval = eval(mul(lit(7), tfm1Eval))
+//
+//    println(tf1View + " = " + tf1Eval)
+//    println(tfm1View + " = " + tfm1Eval)
+//    println(tfm2View + " = " + tfm2Eval)
+//    val serialized: Tree = toTree(add(lit(8), neg(add(lit(1), lit(2)))))
+//    println(serialized.show)
+//    val tf1_eval = fromTree[(String, Int)](serialized) match {
+//      case Left(e) => println("Error: " + e)
+//      case Right(x) => println(x._1 + " = " + x._2)
+//    }
+
+    Serialization.main(args)
   }

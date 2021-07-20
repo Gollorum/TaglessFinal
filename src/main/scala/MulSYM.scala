@@ -1,19 +1,28 @@
-package ftt:
+import PushNeg.Ctx
+import Serialization.{Deserializer, ErrorMsg, Leaf, Node, OnInvalid, Tree}
 
-  trait MulSYM[R] extends Gimme2:
-    def mul(e1: Input1, e2: Input2): R
+trait MulSYM[repr]:
+  def mul(e1: repr, e2: repr): repr
 
-  object MulSYM:
+object MulSYM:
+  def mul[repr](e1: repr, e2: repr)(implicit mulSYM: MulSYM[repr]): repr = mulSYM.mul(e1, e2)
 
-    case class mul[I1[_], I2[_]](e1: Exp[I1], e2: Exp[I2]) extends Exp[[R] =>> Interpreter2[MulSYM[R], I1, I2]]:
-      override def apply[R](implicit inst: Interpreter2[MulSYM[R], I1, I2]): R = inst.a.mul(e1(inst.b), e2(inst.c))
+  given MulSYM[String] with
+    override def mul(e1: String, e2: String): String = s"($e1 * $e2)"
 
-    implicit object Eval extends MulSYM[Int]:
-      override type Input1 = Int
-      override type Input2 = Int
-      override def mul(e1: Int, e2: Int): Int = e1 * e2
+  given MulSYM[Int] with
+    override def mul(e1: Int, e2: Int): Int = e1 * e2
 
-    implicit object View extends MulSYM[String]:
-      override type Input1 = String
-      override type Input2 = String
-      override def mul(e1: String, e2: String): String = "(" + e1 + " * " + e2 + ")"
+  given MulSYM[Tree] with
+    override def mul(e1: Tree, e2: Tree): Tree = Node("Mul", e1, e2)
+
+  class fromTree[A](implicit interpreter: MulSYM[A]) extends Deserializer[A]:
+    override def apply(tree: Tree, onInvalid: OnInvalid[A], self: Deserializer[A]): Either[ErrorMsg, A] = tree match
+      case Node("Mul", e1, e2) => for {
+        e1a <- self(e1, onInvalid)
+        e2a <- self(e2, onInvalid)
+      } yield interpreter.mul(e1a, e2a)
+      case e => onInvalid(e)
+
+  implicit def pushNeg[repr](implicit i: MulSYM[repr]): MulSYM[Ctx => repr] = new MulSYM[Ctx => repr]:
+    override def mul(e1: Ctx => repr, e2: Ctx => repr): Ctx => repr = ctx => i.mul(e1(ctx), e2(Ctx.Pos))
