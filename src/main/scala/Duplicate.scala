@@ -4,7 +4,9 @@ import Serialization.{Tree, ErrorMsg, xpS}
 
 object Duplicate:
 
-  implicit def dupl[repr, repr2](implicit i1: ExpSYM[repr], i2: ExpSYM[repr2]): ExpSYM[(repr, repr2)] = new ExpSYM[(repr, repr2)]:
+  implicit def dupl[repr, repr2](
+    implicit i1: ExpSYM[repr], i2: ExpSYM[repr2]
+  ): ExpSYM[(repr, repr2)] = new ExpSYM[(repr, repr2)]:
     override def lit(n: Int): (repr, repr2) =
       (i1.lit(n), i2.lit(n))
     override def neg(e: (repr, repr2)): (repr, repr2) =
@@ -12,8 +14,7 @@ object Duplicate:
     override def add(e1: (repr, repr2), e2: (repr, repr2)): (repr, repr2) =
       (i1.add(e1._1, e2._1), i2.add(e1._2, e2._2))
 
-  def main(args: Array[String]): Unit =
-
+  def test =
     def check_consume[A, B](f: A => B)(e: Either[ErrorMsg, A]) = e match
       case Left(err) => println(err)
       case Right(x) => f(x)

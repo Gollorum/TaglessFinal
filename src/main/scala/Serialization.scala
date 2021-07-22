@@ -41,9 +41,10 @@ object Serialization:
       } yield interpreter.add(e1a, e2a)
       case e => onInvalid(e)
 
-  def main(args: Array[String]): Unit =
+
+
+  def test =
     import ExpSYM.{add, lit, neg}
-    import MulSYM.mul
 
     val toTree: Tree => Tree = identity
     val view: String => String = identity
@@ -57,20 +58,15 @@ object Serialization:
       case Right(e) => e
     })
 
+    import MulSYM.mul
+
     val tfm1Tree = toTree(add(lit(1), neg(mul(lit(1), lit(2)))))
-    println(tfm1Tree)
     println(fromTree(tfm1Tree) match {
       case Left(e) => e
       case Right(e) => e
     })
     val msD = MulSYM.fromTree[String]
     println((msD :: fromTree)(tfm1Tree) match {
-      case Left(e) => e
-      case Right(e) => e
-    })
-
-    import PushNeg._
-    println((msD :: fromTree)(pushNeg(toTree)(add(lit(1), neg(mul(lit(1), lit(2)))))) match {
       case Left(e) => e
       case Right(e) => e
     })
