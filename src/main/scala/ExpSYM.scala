@@ -19,8 +19,12 @@ object ExpSYM:
     override def add(e1: Int, e2: Int): Int = e1 + e2
 
   def test: Unit =
-    val eval: Int => Int = identity
-    val view: String => String = identity
 
-    def tf1[repr](using ExpSYM[repr]) = add(lit(8), neg(add(lit(1), lit(2))))
+    def eval[F[_]](using interpreter: F[Int]): ([repr] => F[repr] => repr) => Int = exp => exp(interpreter)
+    def view[F[_]](using interpreter: F[String]): ([repr] => F[repr] => repr) => String = exp => exp(interpreter)
+
+    val tf1 = [repr] => (expSYM: ExpSYM[repr]) =>
+      given ExpSYM[repr] = expSYM
+      add(lit(8), neg(add(lit(1), lit(2))))
+
     println(view(tf1) + " = " + eval(tf1))

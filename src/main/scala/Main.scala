@@ -8,10 +8,10 @@ object Main:
 
   def main(args: Array[String]): Unit = {
 //    Initial.test
-//    ExpSYM.test
+    ExpSYM.test
 //    MulSYM.test
-//    Serialization.test
+    Serialization.test
 //    Duplicate.test
 //    PushNeg.test
-    Database.test
+//    Database.test
   }
